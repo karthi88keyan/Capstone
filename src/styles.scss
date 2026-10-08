@@ -1,1 +1,44 @@
 /* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /**
+   * .input-field — shared dark-theme form input / select style.
+   * Used across CartCheckoutComponent address form fields.
+   */
+  .input-field {
+    @apply w-full bg-inputBg border border-white/15 rounded
+           text-white/80 text-sm px-3 py-2.5
+           placeholder-white/25 focus:outline-none
+           focus:border-brandBlue/50 transition-colors;
+  }
+
+  /**
+   * .payment-input — dark input used inside PaymentModalComponent.
+   */
+  .payment-input {
+    @apply w-full bg-inputBg border border-white/15 rounded
+           text-white/80 text-sm px-3 py-2.5
+           placeholder-white/25 focus:outline-none
+           focus:border-brandBlue/50 transition-colors;
+  }
+}
+
+/* ── Native <dialog> backdrop blur ──────────────────────────────── */
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Centre the dialog in the viewport */
+.payment-dialog,
+.confirmation-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}

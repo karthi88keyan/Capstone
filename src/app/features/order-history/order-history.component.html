@@ -1,0 +1,152 @@
+<!-- ============================================================
+     OrderHistoryComponent — My Orders Page
+     ============================================================ -->
+<div class="min-h-[calc(100vh-56px)] bg-darkBg text-white overflow-y-auto">
+  <div class="max-w-6xl mx-auto px-6 py-8 relative">
+
+    <!-- Toast Notification Banner -->
+    @if (notification()) {
+      <div class="fixed top-20 right-6 z-50 bg-brandBlue text-white text-sm font-semibold
+                  px-5 py-3 rounded-md shadow-lg border border-blue-400/20 flex items-center gap-2.5 animate-bounce">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>{{ notification() }}</span>
+      </div>
+    }
+
+    <!-- Header Section -->
+    <header class="mb-8">
+      <h1 class="text-2xl font-bold tracking-tight">My Orders</h1>
+      <p class="text-white/50 text-sm mt-1">Track, manage, and re-order books from your purchase history.</p>
+    </header>
+
+    <!-- Orders Content -->
+    @if (ordersService.orders().length === 0) {
+      <!-- Empty State -->
+      <div class="bg-cardBg rounded-lg p-12 flex flex-col items-center justify-center gap-4 text-center border border-white/5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-14 text-white/20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+        <div>
+          <h3 class="text-lg font-semibold">No orders found</h3>
+          <p class="text-white/40 text-sm mt-1">You have not placed any orders yet.</p>
+        </div>
+        <a routerLink="/" class="bg-brandBlue hover:bg-blue-600 text-white text-sm font-semibold px-6 py-2.5 rounded transition-colors mt-2">
+          Browse Books
+        </a>
+      </div>
+    } @else {
+      <!-- Orders List -->
+      <div class="space-y-6">
+        @for (order of ordersService.orders(); track order.orderId) {
+          <div class="bg-cardBg rounded-lg border border-white/10 overflow-hidden shadow-sm">
+            
+            <!-- Order Header -->
+            <div class="bg-white/[0.02] border-b border-white/10 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+              <div class="flex flex-wrap gap-x-8 gap-y-2 text-xs">
+                <div>
+                  <span class="text-white/40 uppercase tracking-wider block font-medium">Order Placed</span>
+                  <span class="text-white/80 font-semibold">{{ order.orderDate | date:'mediumDate' }}</span>
+                </div>
+                <div>
+                  <span class="text-white/40 uppercase tracking-wider block font-medium">Total Price</span>
+                  <span class="text-brandBlue font-bold text-sm">{{ order.totalAmount | currency:'INR':'symbol-narrow':'1.0-2' }}</span>
+                </div>
+                <div>
+                  <span class="text-white/40 uppercase tracking-wider block font-medium">Payment Method</span>
+                  <span class="text-white/80 font-semibold">{{ order.paymentMethod }}</span>
+                </div>
+                <div>
+                  <span class="text-white/40 uppercase tracking-wider block font-medium">Order ID</span>
+                  <span class="text-white/80 font-mono font-semibold">{{ order.orderId }}</span>
+                </div>
+              </div>
+
+              <!-- Status & Cancellation -->
+              <div class="flex items-center gap-4">
+                <!-- Status Badge -->
+                <span class="px-3 py-1 rounded text-xs font-semibold uppercase tracking-wider"
+                      [ngClass]="{
+                        'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': order.status === 'Pending',
+                        'bg-blue-500/10 text-blue-400 border border-blue-500/20': order.status === 'Confirmed',
+                        'bg-purple-500/10 text-purple-400 border border-purple-500/20': order.status === 'Shipped',
+                        'bg-green-500/10 text-green-400 border border-green-500/20': order.status === 'Delivered',
+                        'bg-red-500/10 text-red-400 border border-red-500/20': order.status === 'Cancelled'
+                      }">
+                  {{ order.status }}
+                </span>
+
+                <!-- Cancel Order Toggle Button -->
+                @if (isEligibleForCancellation(order)) {
+                  <button type="button" (click)="cancelOrder(order.orderId)"
+                          class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white text-xs font-semibold
+                                 px-3 py-1.5 rounded border border-red-500/30 hover:border-transparent transition-colors">
+                    Cancel Order
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Order Items List -->
+            <div class="px-6 divide-y divide-white/5">
+              @for (item of order.items; track item.book.id) {
+                <div class="py-5 flex items-center justify-between gap-4">
+                  <div class="flex items-center gap-4 min-w-0">
+                    <!-- Book Cover -->
+                    <div class="w-12 h-18 bg-white/5 rounded overflow-hidden shrink-0">
+                      <img [src]="item.book.coverImage" [alt]="item.book.title" class="w-full h-full object-cover">
+                    </div>
+                    <!-- Book Text Details -->
+                    <div class="min-w-0">
+                      <h4 class="text-sm font-semibold text-white truncate hover:text-brandBlue transition-colors">
+                        <a [routerLink]="['/books', item.book.id]">{{ item.book.title }}</a>
+                      </h4>
+                      <p class="text-xs text-white/50 mt-0.5">by {{ item.book.author }}</p>
+                      <div class="flex items-center gap-3 mt-1.5">
+                        <span class="text-xs text-white/80 font-medium">Qty: {{ item.quantity }}</span>
+                        <span class="text-xs text-white/30">|</span>
+                        <span class="text-xs text-white/80 font-semibold">{{ item.book.price | currency:'INR':'symbol-narrow':'1.0-0' }} each</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Buy It Again Action Button -->
+                  <button type="button" (click)="buyAgain(item.book)"
+                          class="shrink-0 bg-brandBlue/10 hover:bg-brandBlue text-brandBlue hover:text-white text-xs font-semibold
+                                 px-4 py-2 rounded flex items-center gap-1.5 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                    </svg>
+                    <span>Buy It Again</span>
+                  </button>
+                </div>
+              }
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Recommendations Rail at the Bottom -->
+    @if (ordersService.recommendations().length > 0) {
+      <section aria-label="Recommended based on Order History" class="mt-16 pt-8 border-t border-white/10">
+        <header class="mb-6">
+          <h2 class="text-xl font-bold tracking-tight">Recommended based on Order History</h2>
+          <p class="text-white/50 text-xs mt-1">Handpicked books matching your preferred categories & genres.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (book of ordersService.recommendations(); track book.id) {
+            <app-book-card [book]="book" />
+          }
+        </div>
+      </section>
+    }
+
+  </div>
+</div>

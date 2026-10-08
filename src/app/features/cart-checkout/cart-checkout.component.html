@@ -1,0 +1,465 @@
+<!-- ================================================================
+     CartCheckoutComponent — screen-03-cart-checkout.png
+     ================================================================ -->
+<div class="min-h-[calc(100vh-56px)] bg-darkBg text-white">
+
+  <!-- ── Breadcrumb ──────────────────────────────────────────────── -->
+  <nav class="px-6 pt-4 pb-2 text-sm flex flex-wrap items-center gap-1.5 text-white/50"
+       aria-label="Breadcrumb">
+    <a routerLink="/"         class="text-brandBlue hover:underline">Home</a>
+    <span>/</span>
+    <a routerLink="/"         class="text-brandBlue hover:underline">Non-Fiction</a>
+    <span>/</span>
+    <a routerLink="/"         class="text-brandBlue hover:underline">Self Help</a>
+    <span>/</span>
+    <a routerLink="/books/joy-of-minimalism" class="text-brandBlue hover:underline">Joy of Minimalism</a>
+    <span>/</span>
+    <span class="text-white/80">Checkout</span>
+    <span>/</span>
+  </nav>
+
+  <!-- ── Page heading ────────────────────────────────────────────── -->
+  <h1 class="px-6 text-xl font-semibold text-white mb-4">Shopping Cart</h1>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       CART ITEMS STRIP
+       ══════════════════════════════════════════════════════════════ -->
+  @if (cartService.cartItems().length > 0) {
+    <section
+      class="mx-6 mb-6 bg-cardBg rounded-lg p-5"
+      aria-label="Cart items"
+    >
+      <div class="flex gap-6 overflow-x-auto pb-2">
+        @for (item of cartService.cartItems(); track item.book.id) {
+          <article
+            class="flex gap-4 min-w-[340px] max-w-[400px] shrink-0"
+            [attr.aria-label]="item.book.title"
+          >
+            <!-- Cover thumbnail -->
+            <div class="w-[120px] h-[180px] shrink-0 rounded overflow-hidden bg-inputBg">
+              <img
+                [src]="item.book.coverImage"
+                [alt]="item.book.title + ' cover'"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+
+            <!-- Book info + stepper -->
+            <div class="flex flex-col justify-between flex-1 py-1 min-w-0">
+              <div class="space-y-1">
+                <h3 class="text-white text-sm font-semibold leading-snug line-clamp-2">
+                  {{ item.book.title }}
+                </h3>
+                <p class="text-brandBlue text-xs">by {{ item.book.author }}</p>
+                <p class="text-white/50 text-xs line-clamp-2 leading-relaxed">
+                  {{ item.book.description }}
+                </p>
+                <p class="text-white/40 text-xs">{{ item.book.format }}</p>
+                <!-- Category tags -->
+                <div class="flex flex-wrap gap-x-1 text-xs">
+                  @for (cat of item.book.categories; track cat; let last = $last) {
+                    <span class="text-brandBlue">{{ cat }}{{ last ? '' : ',' }}</span>
+                  }
+                </div>
+                <p class="text-white text-lg font-bold mt-1">₹{{ item.book.price }}</p>
+                <p class="text-white/40 text-xs">{{ item.book.deliveryDateTag }}</p>
+              </div>
+
+              <!-- Quantity stepper -->
+              <div class="flex items-center gap-3 mt-3 border-t border-white/10 pt-3">
+                <span class="text-white text-sm w-6 text-center">{{ item.quantity }}</span>
+                <div class="flex items-center border border-white/20 rounded divide-x divide-white/20">
+                  <button
+                    type="button"
+                    class="w-8 h-8 flex items-center justify-center
+                           text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                    (click)="decrement(item)"
+                    [attr.aria-label]="'Decrease quantity of ' + item.book.title"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="w-8 h-8 flex items-center justify-center
+                           text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                    (click)="increment(item)"
+                    [attr.aria-label]="'Increase quantity of ' + item.book.title"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                      <line x1="12" y1="5" x2="12" y2="19"/>
+                      <line x1="5"  y1="12" x2="19" y2="12"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  } @else if (!orderPlaced()) {
+    <!-- Empty cart state -->
+    <div class="mx-6 mb-6 bg-cardBg rounded-lg p-10 flex flex-col items-center
+                justify-center gap-3 text-white/40">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">
+        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      <p class="text-sm">Your cart is empty.</p>
+      <a routerLink="/" class="text-brandBlue text-sm hover:underline">Browse books →</a>
+    </div>
+  }
+
+  <!-- Order placed success banner -->
+  @if (orderPlaced()) {
+    <div class="mx-6 mb-6 bg-green-500/10 border border-green-500/30 rounded-lg
+                p-6 flex flex-col items-center gap-2 text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-green-400"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <p class="text-white font-semibold text-lg">Order Placed Successfully!</p>
+      <p class="text-white/60 text-sm">You'll receive a confirmation shortly.</p>
+      <a routerLink="/"
+         class="mt-2 bg-brandBlue hover:bg-blue-600 text-white text-sm font-semibold
+                px-5 py-2 rounded transition-colors">
+        Continue Shopping
+      </a>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════════
+       BOTTOM ROW — Address form (left) + Order summary (right)
+       ══════════════════════════════════════════════════════════════ -->
+  @if (!orderPlaced() && cartService.cartItems().length > 0) {
+    <div class="mx-6 mb-8 grid grid-cols-[1fr_340px] gap-5">
+
+      <!-- ════════════════════════════════════════════════════════
+           LEFT: Address Reactive Form
+           ════════════════════════════════════════════════════════ -->
+      <section class="bg-cardBg rounded-lg p-6" aria-labelledby="address-heading">
+        <h2 id="address-heading" class="text-lg font-semibold text-white mb-4">Address</h2>
+
+        <!-- Use Saved Address checkbox -->
+        <label class="flex items-center gap-2.5 mb-5 cursor-pointer select-none w-fit">
+          <input
+            type="checkbox"
+            class="w-4 h-4 rounded border-white/30 bg-inputBg accent-brandBlue cursor-pointer"
+            [checked]="useSavedAddress()"
+            (change)="toggleSavedAddress($any($event.target).checked)"
+            aria-label="Use saved address"
+          />
+          <span class="text-white/70 text-sm">Use Saved Address</span>
+        </label>
+
+        <form [formGroup]="addressForm" novalidate class="space-y-4" autocomplete="on">
+
+          <!-- Row 1: First Name | Last Name | Address -->
+          <div class="grid grid-cols-[1fr_1fr_2fr] gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-white/50 text-xs" for="firstName">First Name</label>
+              <input
+                id="firstName" formControlName="firstName"
+                type="text" placeholder="First Name" autocomplete="given-name"
+                class="input-field"
+                [class.border-red-500/60]="isInvalid('firstName')"
+              />
+              @if (isInvalid('firstName')) {
+                <span class="text-red-400 text-xs">Required (min 2 chars)</span>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-white/50 text-xs" for="lastName">Last Name</label>
+              <input
+                id="lastName" formControlName="lastName"
+                type="text" placeholder="Last Name" autocomplete="family-name"
+                class="input-field"
+                [class.border-red-500/60]="isInvalid('lastName')"
+              />
+              @if (isInvalid('lastName')) {
+                <span class="text-red-400 text-xs">Required (min 2 chars)</span>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-white/50 text-xs" for="addressLine">Address</label>
+              <input
+                id="addressLine" formControlName="addressLine"
+                type="text" placeholder="Address Line 2" autocomplete="street-address"
+                class="input-field"
+                [class.border-red-500/60]="isInvalid('addressLine')"
+              />
+              @if (isInvalid('addressLine')) {
+                <span class="text-red-400 text-xs">Required (min 5 chars)</span>
+              }
+            </div>
+          </div>
+
+          <!-- Row 2: Email | City | Pin -->
+          <div class="grid grid-cols-[2fr_1fr_1fr] gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-white/50 text-xs" for="email">e-mail</label>
+              <input
+                id="email" formControlName="email"
+                type="email" placeholder="e-mail" autocomplete="email"
+                class="input-field"
+                [class.border-red-500/60]="isInvalid('email')"
+              />
+              @if (isInvalid('email')) {
+                <span class="text-red-400 text-xs">Valid email required</span>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-white/50 text-xs" for="city">City</label>
+              <input
+                id="city" formControlName="city"
+                type="text" placeholder="City" autocomplete="address-level2"
+                class="input-field"
+                [class.border-red-500/60]="isInvalid('city')"
+              />
+              @if (isInvalid('city')) {
+                <span class="text-red-400 text-xs">Required</span>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-white/50 text-xs" for="pin">Pin</label>
+              <input
+                id="pin" formControlName="pin"
+                type="text" placeholder="000000" autocomplete="postal-code"
+                maxlength="6" inputmode="numeric"
+                class="input-field"
+                [class.border-red-500/60]="isInvalid('pin')"
+              />
+              @if (isInvalid('pin')) {
+                <span class="text-red-400 text-xs">6-digit PIN required</span>
+              }
+            </div>
+          </div>
+
+          <!-- Row 3: Phone | State | Country -->
+          <div class="grid grid-cols-[2fr_1fr_1fr] gap-4">
+            <!-- Phone with country code prefix -->
+            <div class="flex flex-col gap-1">
+              <label class="text-white/50 text-xs" for="phone">Phone Number</label>
+              <div class="flex gap-0 border border-white/15 rounded overflow-hidden
+                          focus-within:border-brandBlue/50 transition-colors"
+                   [class.border-red-500/60]="isInvalid('phone')">
+                <!-- Dial code selector -->
+                <select
+                  formControlName="dialCode"
+                  class="bg-inputBg text-white/80 text-sm px-2 py-2.5
+                         border-r border-white/15 focus:outline-none cursor-pointer
+                         appearance-none min-w-[64px]"
+                  aria-label="Country dialling code"
+                >
+                  @for (code of dialCodes; track code) {
+                    <option [value]="code" class="bg-cardBg">{{ code }}</option>
+                  }
+                </select>
+                <input
+                  id="phone" formControlName="phone"
+                  type="tel" placeholder="12345567890"
+                  autocomplete="tel-national" maxlength="10" inputmode="numeric"
+                  class="flex-1 bg-inputBg text-white/80 text-sm px-3 py-2.5
+                         placeholder-white/25 focus:outline-none"
+                />
+              </div>
+              @if (isInvalid('phone')) {
+                <span class="text-red-400 text-xs">10-digit number required</span>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-white/50 text-xs" for="state">State</label>
+              <select
+                id="state" formControlName="state"
+                class="input-field appearance-none cursor-pointer"
+                [class.border-red-500/60]="isInvalid('state')"
+                aria-label="State"
+              >
+                <option value="" disabled>State</option>
+                @for (s of states; track s) {
+                  <option [value]="s" class="bg-cardBg">{{ s }}</option>
+                }
+              </select>
+              @if (isInvalid('state')) {
+                <span class="text-red-400 text-xs">Required</span>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-white/50 text-xs" for="country">Country</label>
+              <select
+                id="country" formControlName="country"
+                class="input-field appearance-none cursor-pointer"
+                aria-label="Country"
+              >
+                @for (c of countries; track c) {
+                  <option [value]="c" class="bg-cardBg">{{ c }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- ════════════════════════════════════════════════════════
+           RIGHT: Order Summary card
+           ════════════════════════════════════════════════════════ -->
+      <aside class="flex flex-col gap-0" aria-label="Order summary">
+
+        <!-- Illustration banner -->
+        <div class="rounded-t-lg overflow-hidden h-[160px] bg-[#1a3a5c] flex items-center
+                    justify-center shrink-0">
+          <!-- Books illustration — inline SVG -->
+          <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg"
+               class="w-full h-full" aria-hidden="true">
+            <rect width="200" height="120" fill="#1a3a5c"/>
+            <!-- Book stack 1 -->
+            <rect x="30" y="60" width="50" height="8"  rx="2" fill="#e74c3c"/>
+            <rect x="28" y="52" width="54" height="8"  rx="2" fill="#f39c12"/>
+            <rect x="32" y="44" width="46" height="8"  rx="2" fill="#2ecc71"/>
+            <!-- Open book -->
+            <path d="M90 55 Q100 45 110 55 L110 90 Q100 80 90 90 Z" fill="#3498db" opacity="0.9"/>
+            <path d="M110 55 Q120 45 130 55 L130 90 Q120 80 110 90 Z" fill="#2980b9" opacity="0.9"/>
+            <!-- Sparkles -->
+            <circle cx="160" cy="30" r="2" fill="#f1c40f" opacity="0.8"/>
+            <circle cx="170" cy="55" r="1.5" fill="#f1c40f" opacity="0.6"/>
+            <circle cx="145" cy="70" r="1" fill="#f1c40f" opacity="0.5"/>
+            <circle cx="50"  cy="30" r="2" fill="#f1c40f" opacity="0.7"/>
+            <!-- Wavy lines -->
+            <path d="M10 35 Q25 28 40 35 Q55 42 70 35" stroke="#ffffff" stroke-width="1"
+                  fill="none" opacity="0.15"/>
+            <path d="M130 80 Q145 73 160 80 Q175 87 190 80" stroke="#ffffff" stroke-width="1"
+                  fill="none" opacity="0.15"/>
+          </svg>
+        </div>
+
+        <!-- Summary card body -->
+        <div class="bg-cardBg rounded-b-lg p-5 space-y-3 flex-1">
+          <h2 class="text-lg font-semibold text-white">Grand Total</h2>
+
+          <!-- Price (n items) -->
+          <div class="flex justify-between text-sm text-white/70">
+            <span>Price ({{ itemCount() }} {{ itemCount() === 1 ? 'item' : 'items' }})</span>
+            <span class="text-white">₹{{ cartService.subtotal() }}.00</span>
+          </div>
+
+          <!-- Tax -->
+          <div class="flex justify-between text-sm text-white/70">
+            <span>Tax</span>
+            <span class="text-white">₹{{ cartService.tax() }}</span>
+          </div>
+
+          <!-- Delivery charges -->
+          <div class="flex justify-between text-sm text-white/70">
+            <span>Delivery Charges</span>
+            <span class="text-green-400 font-medium">Free</span>
+          </div>
+
+          <!-- Coupon input -->
+          <div class="flex gap-0 overflow-hidden border border-white/15 rounded
+                      focus-within:border-brandBlue/40 transition-colors mt-1">
+            <input
+              type="text"
+              placeholder="Apply Coupon"
+              class="flex-1 bg-transparent text-white/70 text-sm px-3 py-2
+                     placeholder-white/30 focus:outline-none"
+              [value]="couponCode()"
+              (input)="onCouponInput($any($event.target).value)"
+              aria-label="Coupon code"
+            />
+            <button
+              type="button"
+              class="bg-brandBlue hover:bg-blue-600 text-white text-sm font-semibold
+                     px-4 py-2 transition-colors shrink-0"
+              (click)="applyCoupon()"
+            >
+              Apply
+            </button>
+          </div>
+
+          <!-- Coupon feedback message -->
+          @if (couponMessage()) {
+            <p class="text-xs"
+               [class.text-green-400]="couponApplied()"
+               [class.text-red-400]="!couponApplied()">
+              {{ couponMessage() }}
+            </p>
+          }
+
+          <!-- Discount -->
+          <div class="flex justify-between text-sm text-white/70">
+            <span>Discount</span>
+            <span class="text-green-400">-₹{{ cartService.discount() }}</span>
+          </div>
+
+          <!-- Divider -->
+          <hr class="border-white/10" />
+
+          <!-- Total Amount -->
+          <div class="flex justify-between items-baseline">
+            <span class="text-white font-bold text-sm">Total Amount</span>
+            <span class="text-white font-bold text-xl">₹{{ cartService.grandTotal() }}</span>
+          </div>
+
+          <!-- Pay Now button -->
+          <button
+            type="button"
+            class="w-full flex items-center justify-center gap-2
+                   bg-brandBlue hover:bg-blue-600 active:bg-blue-700
+                   text-white text-sm font-bold py-3 rounded
+                   transition-colors mt-1 disabled:opacity-50"
+            [disabled]="cartService.cartItems().length === 0"
+            (click)="openPaymentModal()"
+          >
+            Pay Now
+            <!-- credit card icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </button>
+
+        </div><!-- /summary card body -->
+      </aside>
+
+    </div><!-- /bottom row grid -->
+  }
+
+</div>
+
+<!-- ── PaymentModalComponent (screen-04) ────────────────────────────── -->
+@if (showPaymentModal()) {
+  <app-payment-modal
+    [payableAmount]="cartService.grandTotal()"
+    (confirmed)="onPaymentConfirmed()"
+    (closed)="onPaymentClosed()"
+  />
+}
+
+<!-- ── OrderConfirmationModalComponent (screen-05) ───────────────────── -->
+@if (showConfirmationModal()) {
+  <app-order-confirmation-modal
+    [purchasedItems]="purchasedItems()"
+    (continueShoppingClicked)="onContinueShopping()"
+  />
+}

@@ -1,0 +1,117 @@
+<!-- ================================================================
+     OrderConfirmationModalComponent — screen-05-confirmation-modal.png
+     Native <dialog> — centered, backdrop blur
+     ================================================================ -->
+<dialog
+  #dialogEl
+  class="confirmation-dialog bg-[#252528] text-white rounded-xl shadow-2xl
+         p-8 m-auto border-0 max-w-[680px] w-full"
+  aria-labelledby="confirm-title"
+  aria-modal="true"
+>
+  <!-- ── Green checkmark badge ─────────────────────────────────── -->
+  <div class="flex justify-center mb-5">
+    <div
+      class="w-12 h-12 rounded-full bg-green-500 flex items-center
+             justify-center shadow-lg shadow-green-500/30"
+      aria-hidden="true"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-6 h-6 text-white"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- ── Headline ───────────────────────────────────────────────── -->
+  <h2
+    id="confirm-title"
+    class="text-center text-white text-base font-medium leading-relaxed mb-7"
+  >
+    Your purchase of the<br />following reads is successful
+  </h2>
+
+  <!-- ── Purchased books horizontal list ───────────────────────── -->
+  <div class="flex gap-5 overflow-x-auto pb-2 mb-7">
+    @for (item of purchasedItems(); track item.book.id) {
+      <article
+        class="flex gap-3 min-w-[280px] shrink-0"
+        [attr.aria-label]="item.book.title"
+      >
+        <!-- Cover -->
+        <div class="w-[100px] h-[148px] shrink-0 rounded overflow-hidden bg-cardBg">
+          <img
+            [src]="item.book.coverImage"
+            [alt]="item.book.title + ' cover'"
+            class="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+
+        <!-- Info -->
+        <div class="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+          <div class="space-y-1">
+            <h3 class="text-white text-sm font-semibold leading-snug line-clamp-2">
+              {{ item.book.title }}
+            </h3>
+            <p class="text-brandBlue text-xs">by {{ item.book.author }}</p>
+            <p class="text-white/50 text-xs line-clamp-2 leading-relaxed">
+              {{ item.book.description }}
+            </p>
+            <p class="text-white/40 text-xs">{{ item.book.format }}</p>
+            <div class="flex flex-wrap gap-x-1 text-xs">
+              @for (cat of item.book.categories; track cat; let last = $last) {
+                <span class="text-brandBlue">{{ cat }}{{ last ? '' : ',' }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="mt-1.5">
+            <p class="text-white text-base font-bold">₹{{ item.book.price }}</p>
+            <p class="text-white/40 text-xs">{{ item.book.deliveryDateTag }}</p>
+          </div>
+        </div>
+      </article>
+    }
+
+    @if (purchasedItems().length === 0) {
+      <p class="text-white/40 text-sm py-4">No items in this order.</p>
+    }
+  </div>
+
+  <!-- ── Continue Shopping button ──────────────────────────────── -->
+  <div class="flex justify-center">
+    <button
+      type="button"
+      class="flex items-center gap-2 bg-brandBlue hover:bg-blue-600
+             text-white text-sm font-semibold px-8 py-2.5 rounded
+             transition-colors"
+      (click)="continueShopping()"
+    >
+      Continue your Shopping
+      <!-- small grid/catalogue icon -->
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-4 h-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+      </svg>
+    </button>
+  </div>
+</dialog>

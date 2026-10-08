@@ -1,0 +1,8 @@
+/* All visual styling is handled by Tailwind utility classes in the template.
+   Component-scoped styles are kept here only for overrides that cannot be
+   expressed cleanly as utilities. */
+
+/* Active nav-link left-edge accent (matches the blue bar in the mockup) */
+.nav-link-active {
+  color: theme('colors.white');
+}

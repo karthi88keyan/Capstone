@@ -1,0 +1,228 @@
+<!-- ================================================================
+     CatalogComponent — screen-01-catalog.png
+     Layout: fixed left sidebar + scrollable main content area
+     ================================================================ -->
+<div class="flex h-[calc(100vh-56px)] bg-darkBg overflow-hidden">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       LEFT SIDEBAR — Category list
+       ══════════════════════════════════════════════════════════════ -->
+  <aside
+    class="w-56 shrink-0 overflow-y-auto border-r border-white/10 py-2"
+    aria-label="Book categories"
+  >
+    <ul class="list-none m-0 p-0">
+      @for (cat of categories; track cat) {
+        <li>
+          <button
+            type="button"
+            class="w-full text-left px-4 py-2 text-sm transition-colors
+                   border-l-2 focus:outline-none"
+            [class.border-brandBlue]="selectedCategory() === cat"
+            [class.text-white]="selectedCategory() === cat"
+            [class.bg-white/5]="selectedCategory() === cat"
+            [class.border-transparent]="selectedCategory() !== cat"
+            [class.text-white/60]="selectedCategory() !== cat"
+            [class.hover:text-white]="selectedCategory() !== cat"
+            (click)="selectCategory(cat)"
+            [attr.aria-current]="selectedCategory() === cat ? 'true' : null"
+          >
+            {{ cat }}
+          </button>
+        </li>
+      }
+    </ul>
+  </aside>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       MAIN CONTENT
+       ══════════════════════════════════════════════════════════════ -->
+  <main class="flex-1 overflow-y-auto flex flex-col">
+
+    <!-- ── Top filter / control bar ──────────────────────────────── -->
+    <div class="sticky top-0 z-10 bg-darkBg border-b border-white/10
+                grid grid-cols-[1fr_auto_auto_auto_auto] gap-0">
+
+      <!-- Search -->
+      <div class="relative flex items-center border-r border-white/10">
+        <input
+          type="text"
+          placeholder="Search you want to read here"
+          class="w-full bg-transparent text-white/80 text-sm placeholder-white/30
+                 px-4 py-3 pr-10 focus:outline-none"
+          (input)="onSearchInput($any($event.target).value)"
+          aria-label="Search books"
+        />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="absolute right-3 w-4 h-4 text-white/40 pointer-events-none"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </div>
+
+      <!-- Language dropdown -->
+      <div class="relative flex items-center border-r border-white/10 min-w-[160px]">
+        <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <span class="text-white/40 text-xs">Language</span>
+        </div>
+        <select
+          class="w-full bg-transparent text-white/80 text-sm
+                 pl-3 pt-6 pb-1 pr-8 focus:outline-none appearance-none cursor-pointer"
+          (change)="onLanguageChange($any($event.target).value)"
+          aria-label="Filter by language"
+        >
+          @for (lang of languages; track lang) {
+            <option [value]="lang" class="bg-cardBg">{{ lang }}</option>
+          }
+        </select>
+        <svg xmlns="http://www.w3.org/2000/svg"
+          class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      <!-- Format dropdown -->
+      <div class="relative flex items-center border-r border-white/10 min-w-[200px]">
+        <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <span class="text-white/40 text-xs">Format (Paperback, ebook etc)</span>
+        </div>
+        <select
+          class="w-full bg-transparent text-white/80 text-sm
+                 pl-3 pt-6 pb-1 pr-8 focus:outline-none appearance-none cursor-pointer"
+          (change)="onFormatChange($any($event.target).value)"
+          aria-label="Filter by format"
+        >
+          @for (fmt of formats; track fmt) {
+            <option [value]="fmt" class="bg-cardBg">{{ fmt }}</option>
+          }
+        </select>
+        <svg xmlns="http://www.w3.org/2000/svg"
+          class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      <!-- Price Range dropdown -->
+      <div class="relative flex items-center border-r border-white/10 min-w-[160px]">
+        <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <span class="text-white/40 text-xs">Price Range</span>
+        </div>
+        <select
+          class="w-full bg-transparent text-white/80 text-sm
+                 pl-3 pt-6 pb-1 pr-8 focus:outline-none appearance-none cursor-pointer"
+          (change)="onPriceRangeChange($any($event.target).value)"
+          aria-label="Filter by price range"
+        >
+          @for (pr of priceRanges; track pr.label) {
+            <option [value]="pr.label" class="bg-cardBg">{{ pr.label }}</option>
+          }
+        </select>
+        <svg xmlns="http://www.w3.org/2000/svg"
+          class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      <!-- Sort by dropdown -->
+      <div class="relative flex items-center min-w-[160px]">
+        <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <span class="text-white/40 text-xs">Sort by</span>
+        </div>
+        <select
+          class="w-full bg-transparent text-white/80 text-sm
+                 pl-3 pt-6 pb-1 pr-8 focus:outline-none appearance-none cursor-pointer"
+          (change)="onSortChange($any($event.target).value)"
+          aria-label="Sort books"
+        >
+          @for (opt of sortOptions; track opt) {
+            <option [value]="opt" class="bg-cardBg">{{ opt }}</option>
+          }
+        </select>
+        <svg xmlns="http://www.w3.org/2000/svg"
+          class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+    </div><!-- /filter bar -->
+
+    <!-- ── Book sections ──────────────────────────────────────────── -->
+    <div class="flex-1 px-6 py-5 space-y-10">
+
+      <!-- ── FILTERED RESULTS (when any filter/search is active) ── -->
+      @if (isFiltering()) {
+        <section aria-label="Search results">
+          <h2 class="text-white text-lg font-semibold mb-4">
+            Results
+            <span class="text-white/40 text-sm font-normal ml-2">
+              ({{ filteredBooks().length }} books)
+            </span>
+          </h2>
+          @if (filteredBooks().length === 0) {
+            <div class="flex flex-col items-center justify-center py-20 text-white/40">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-3"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <p class="text-sm">No books found. Try a different filter.</p>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              @for (book of filteredBooks(); track book.id) {
+                <app-book-card [book]="book" />
+              }
+            </div>
+          }
+        </section>
+      } @else {
+        <!-- ── DEFAULT: three carousels ─────────────────────────── -->
+
+        <!-- Recommended for You -->
+        <section aria-label="Recommended for You">
+          <h2 class="text-white text-lg font-semibold mb-4">Recommended for You</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            @for (book of recommended; track book.id) {
+              <app-book-card [book]="book" />
+            }
+          </div>
+        </section>
+
+        <!-- Bestsellers this Month -->
+        <section aria-label="Bestsellers this Month">
+          <h2 class="text-white text-lg font-semibold mb-4">Bestsellers this Month</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            @for (book of bestsellers; track book.id) {
+              <app-book-card [book]="book" />
+            }
+          </div>
+        </section>
+
+        <!-- New Launches -->
+        <section aria-label="New Launches">
+          <h2 class="text-white text-lg font-semibold mb-4">New Launches</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            @for (book of newLaunches; track book.id) {
+              <app-book-card [book]="book" />
+            }
+          </div>
+        </section>
+
+      }
+    </div><!-- /book sections -->
+
+  </main>
+</div>

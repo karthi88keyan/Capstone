@@ -1,0 +1,421 @@
+<!-- ================================================================
+     ProductDetailComponent — screen-02-product-detail.png
+     Layout: breadcrumb + 3-column grid (covers | detail | sidebar)
+     ================================================================ -->
+@if (book(); as b) {
+<div class="min-h-[calc(100vh-56px)] bg-darkBg text-white">
+
+  <!-- ── Breadcrumb ──────────────────────────────────────────────── -->
+  <nav
+    class="px-6 pt-4 pb-2 text-sm flex items-center gap-1.5 text-white/50"
+    aria-label="Breadcrumb"
+  >
+    <button
+      type="button"
+      class="text-brandBlue hover:underline"
+      (click)="goHome()"
+    >Home</button>
+    <span>/</span>
+    @if (b.categories[0]) {
+      <span class="text-brandBlue">{{ b.categories[0] }}</span>
+      <span>/</span>
+    }
+    <span class="text-white/80">{{ b.categories[1] ?? b.categories[0] }}</span>
+  </nav>
+
+  <!-- ── Three-column layout ─────────────────────────────────────── -->
+  <div class="grid grid-cols-[auto_1fr_300px] gap-0 px-6 pb-10">
+
+    <!-- ════════════════════════════════════════════════════════════
+         LEFT COLUMN — Dual book covers
+         ════════════════════════════════════════════════════════════ -->
+    <div class="flex gap-3 pr-6 pt-2 shrink-0">
+
+      <!-- Front cover -->
+      <div class="w-[148px] h-[220px] rounded overflow-hidden bg-cardBg shadow-lg">
+        <img
+          [src]="b.coverImage"
+          [alt]="b.title + ' front cover'"
+          class="w-full h-full object-cover"
+        />
+      </div>
+
+      <!-- Back cover (styled blurb card) -->
+      <div
+        class="w-[148px] h-[220px] rounded overflow-hidden bg-[#f1c40f]
+               flex flex-col px-3 py-3 gap-2 shadow-lg"
+        aria-label="Back cover blurb"
+      >
+        <p class="text-[9px] font-serif italic text-black/70 text-center leading-tight">
+          "A refreshing path to clarity in a cluttered world."
+        </p>
+        <p class="text-[8px] text-black/80 leading-relaxed">
+          Discover how less can truly be more.
+        </p>
+        <p class="text-[8px] text-black/80 leading-relaxed">
+          In <em>{{ b.title }}</em>, {{ b.author }} guides you through practical
+          strategies to declutter your mind, space, and schedule. Whether you're
+          overwhelmed, over-committed, or just over it—this book offers a calm,
+          mindful approach to building a simpler, more fulfilling life.
+        </p>
+        <p class="text-[8px] font-semibold text-black/80 mt-1">About the Author</p>
+        <p class="text-[8px] text-black/70 leading-relaxed">
+          {{ b.authorBio }}
+        </p>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         CENTRE COLUMN — Detail + bio + reviews
+         ════════════════════════════════════════════════════════════ -->
+    <div class="border-r border-white/10 pr-8 pt-2 space-y-8">
+
+      <!-- ── Book meta ─────────────────────────────────────────── -->
+      <div class="space-y-3">
+        <h1 class="text-2xl font-bold text-white">{{ b.title }}</h1>
+
+        <p class="text-sm text-white/70">
+          by
+          <a
+            [routerLink]="['/writers', b.author]"
+            class="text-brandBlue hover:underline"
+          >{{ b.author }}</a>
+        </p>
+
+        <p class="text-sm text-white/60 leading-relaxed">{{ b.description }}</p>
+
+        <p class="text-sm text-white/50">
+          Published by:
+          <span class="text-brandBlue">{{ b.publisher }}</span>
+        </p>
+
+        <!-- Format + categories -->
+        <div>
+          <p class="text-sm text-white/60 mb-1">{{ b.format }}</p>
+          <div class="flex flex-wrap gap-x-1 text-xs">
+            @for (cat of b.categories; track cat; let last = $last) {
+              <a
+                [routerLink]="['/']"
+                class="text-brandBlue hover:underline"
+              >{{ cat }}{{ last ? '' : ',' }}</a>
+            }
+          </div>
+        </div>
+
+        <!-- Price + delivery -->
+        <div>
+          <span class="text-3xl font-bold text-white">₹{{ b.price }}</span>
+          @if (b.originalPrice > b.price) {
+            <span class="text-white/40 text-sm line-through ml-3">₹{{ b.originalPrice }}</span>
+          }
+          <p class="text-sm text-white/50 mt-0.5">
+            {{ b.deliveryDateTag }}
+          </p>
+        </div>
+
+        <!-- CTA buttons -->
+        <div class="flex gap-3 pt-1">
+          <button
+            type="button"
+            class="flex items-center gap-2 bg-brandBlue hover:bg-blue-600
+                   text-white text-sm font-semibold px-5 py-2.5 rounded
+                   transition-colors"
+            (click)="addToCart()"
+          >
+            Add to Cart
+            <!-- cart icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            class="flex items-center gap-2 border text-sm font-semibold
+                   px-5 py-2.5 rounded transition-colors"
+            [class.border-white/30]="!inWishlist()"
+            [class.text-white/70]="!inWishlist()"
+            [class.hover:border-white]="!inWishlist()"
+            [class.border-accentYellow]="inWishlist()"
+            [class.text-accentYellow]="inWishlist()"
+            (click)="toggleWishlist()"
+            [attr.aria-pressed]="inWishlist()"
+          >
+            {{ inWishlist() ? 'Wishlisted' : 'Add to Wishlist' }}
+            <!-- bookmark icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Metadata pills -->
+        <div class="flex items-center gap-6 pt-2">
+          <!-- Language -->
+          <div class="flex flex-col items-start gap-0.5">
+            <div class="flex items-center gap-1 text-white/40 text-xs">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              Language
+            </div>
+            <span class="text-brandBlue text-sm font-medium">{{ b.language }}</span>
+          </div>
+
+          <!-- Rating -->
+          <div class="flex flex-col items-start gap-0.5">
+            <div class="flex items-center gap-1 text-white/40 text-xs">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              Rating
+            </div>
+            <div class="flex gap-0.5">
+              @for (s of STARS; track s) {
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
+                  [class.text-accentYellow]="isFilled(s, b.rating)"
+                  [class.text-white/20]="!isFilled(s, b.rating)"
+                  viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              }
+            </div>
+          </div>
+
+          <!-- Sells -->
+          <div class="flex flex-col items-start gap-0.5">
+            <div class="flex items-center gap-1 text-white/40 text-xs">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              Sells
+            </div>
+            <span class="text-white text-sm font-medium">{{ b.sellsCount }} copies sold</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── About the Writer ──────────────────────────────────── -->
+      <section aria-labelledby="writer-heading">
+        <h2 id="writer-heading" class="text-lg font-semibold text-white mb-4">
+          About the writer
+        </h2>
+        <div class="flex gap-4">
+          <!-- Avatar circle -->
+          <div
+            class="w-16 h-16 rounded-full shrink-0 bg-inputBg border border-white/20
+                   flex items-center justify-center overflow-hidden"
+          >
+            @if (b.authorPhoto) {
+              <img [src]="b.authorPhoto" [alt]="b.author" class="w-full h-full object-cover" />
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white/40"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            }
+          </div>
+          <div>
+            <p class="text-white font-semibold mb-1">{{ b.author }}</p>
+            <p class="text-white/60 text-sm leading-relaxed">
+              {{ b.authorBio }}
+              Daniel Reed is a writer, minimalist, and productivity coach based in San
+              Francisco. With a passion for intentional living, Daniel has dedicated his
+              career to helping individuals simplify their lives — one habit, one space,
+              and one thought at a time.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Reviews ───────────────────────────────────────────── -->
+      <section aria-labelledby="reviews-heading">
+        <h2 id="reviews-heading" class="text-lg font-semibold text-white mb-4">
+          Reviews
+        </h2>
+
+        <div class="grid grid-cols-[1fr_1fr] gap-6">
+
+          <!-- Left: review form -->
+          <div class="space-y-3">
+            <!-- Char counter label -->
+            <div class="flex justify-between text-xs text-white/40">
+              <span>Leave Your Review</span>
+              <span>{{ charCount() }}/{{ MAX_CHARS }}</span>
+            </div>
+
+            <!-- Textarea -->
+            <textarea
+              class="w-full bg-inputBg border border-white/10 rounded
+                     text-white/70 text-sm placeholder-white/20 p-3 resize-none
+                     focus:outline-none focus:border-brandBlue/50 h-32"
+              placeholder="Placeholder text"
+              [value]="reviewText()"
+              (input)="onReviewInput($any($event.target).value)"
+              [maxLength]="MAX_CHARS"
+              aria-label="Review text"
+            ></textarea>
+
+            <!-- Interactive star selector -->
+            <div
+              class="flex gap-1.5"
+              role="radiogroup"
+              aria-label="Select your rating"
+              (mouseleave)="clearHover()"
+            >
+              @for (s of STARS; track s) {
+                <button
+                  type="button"
+                  class="focus:outline-none"
+                  [attr.aria-label]="s + ' stars'"
+                  (mouseenter)="setHover(s)"
+                  (click)="setRating(s)"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 transition-colors"
+                    [class.text-accentYellow]="activeStar(s)"
+                    [class.text-white/20]="!activeStar(s)"
+                    viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                </button>
+              }
+            </div>
+
+            <!-- Submit button -->
+            <button
+              type="button"
+              class="flex items-center gap-2 bg-brandBlue hover:bg-blue-600
+                     text-white text-sm font-semibold px-5 py-2.5 rounded
+                     transition-colors disabled:opacity-40"
+              [disabled]="!reviewText().trim() || reviewRating() === 0"
+              (click)="submitReview()"
+            >
+              Submit
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Right: existing review cards -->
+          <div class="space-y-4">
+            @for (review of reviews(); track review.id) {
+              <article class="space-y-2">
+                <p class="text-white font-semibold text-sm">{{ review.reviewerName }}</p>
+                <p class="text-white/60 text-xs leading-relaxed">{{ review.comment }}</p>
+                <!-- Star display -->
+                <div class="flex gap-1">
+                  @for (s of STARS; track s) {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
+                      [class.text-accentYellow]="isFilled(s, review.rating)"
+                      [class.text-white/20]="!isFilled(s, review.rating)"
+                      viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  }
+                </div>
+              </article>
+            }
+
+            @if (reviews().length === 0) {
+              <p class="text-white/30 text-sm">No reviews yet. Be the first!</p>
+            }
+          </div>
+
+        </div>
+      </section>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         RIGHT SIDEBAR — Related Reads
+         ════════════════════════════════════════════════════════════ -->
+    <aside class="pl-6 pt-2 space-y-5" aria-label="Related Reads">
+      <h2 class="text-lg font-semibold text-white">Related Reads</h2>
+
+      @for (related of relatedReads(); track related.id) {
+        <article
+          class="flex gap-3 cursor-pointer group"
+          [attr.aria-label]="'View ' + related.title"
+          [routerLink]="['/book', related.id]"
+        >
+          <!-- Cover -->
+          <div class="w-[80px] h-[120px] shrink-0 rounded overflow-hidden bg-cardBg">
+            <img
+              [src]="related.coverImage"
+              [alt]="related.title + ' cover'"
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+
+          <!-- Info -->
+          <div class="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+            <div>
+              <h3
+                class="text-white text-xs font-semibold leading-snug
+                       group-hover:text-brandBlue transition-colors line-clamp-2"
+              >
+                {{ related.title }}
+              </h3>
+              <p class="text-brandBlue text-xs mt-0.5">by {{ related.author }}</p>
+              <p class="text-white/40 text-xs mt-1 leading-relaxed line-clamp-2">
+                {{ related.description }}
+              </p>
+              <p class="text-white/30 text-xs mt-1">{{ related.format }}</p>
+              <div class="flex flex-wrap gap-x-1 mt-0.5">
+                @for (cat of related.categories; track cat; let last = $last) {
+                  <span class="text-brandBlue text-xs">{{ cat }}{{ last ? '' : ',' }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="mt-1.5">
+              <p class="text-white text-sm font-bold">₹{{ related.price }}</p>
+              <p class="text-white/40 text-xs">{{ related.deliveryDateTag }}</p>
+              <!-- Add to Cart button -->
+              <button
+                type="button"
+                class="mt-1.5 w-full text-xs font-semibold bg-brandBlue/10
+                       hover:bg-brandBlue text-brandBlue hover:text-white
+                       border border-brandBlue/30 rounded px-2 py-1
+                       transition-colors"
+                (click)="addRelatedToCart(related); $event.preventDefault(); $event.stopPropagation()"
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- divider between cards -->
+        <hr class="border-white/10" />
+      }
+    </aside>
+
+  </div><!-- /three-column grid -->
+</div>
+} @else {
+  <!-- Loading / not found state -->
+  <div class="flex items-center justify-center h-[calc(100vh-56px)] bg-darkBg text-white/40">
+    <p>Book not found.</p>
+  </div>
+}

@@ -1,0 +1,62 @@
+<!-- ================================================================
+     BookCardComponent — horizontal card matching catalog mockup
+     ================================================================ -->
+<article
+  class="flex gap-4 cursor-pointer group"
+  [routerLink]="['/book', book().id]"
+  [attr.aria-label]="'View details for ' + book().title"
+>
+  <!-- Cover image -->
+  <div class="shrink-0 w-[100px] h-[148px] rounded overflow-hidden bg-cardBg">
+    <img
+      [src]="book().coverImage"
+      [alt]="book().title + ' cover'"
+      class="w-full h-full object-cover"
+      loading="lazy"
+    />
+  </div>
+
+  <!-- Book info -->
+  <div class="flex flex-col justify-between flex-1 min-w-0">
+    <!-- Title + author -->
+    <div>
+      <h3
+        class="text-white text-sm font-semibold leading-snug group-hover:text-brandBlue
+               transition-colors line-clamp-2"
+      >
+        {{ book().title }}
+      </h3>
+      <p class="text-brandBlue text-xs mt-0.5">
+        by {{ book().author }}
+      </p>
+      <p class="text-white/50 text-xs mt-1.5 line-clamp-2 leading-relaxed">
+        {{ book().description }}
+      </p>
+    </div>
+
+    <!-- Format -->
+    <p class="text-white/40 text-xs mt-2">{{ book().format }}</p>
+
+    <!-- Category tags -->
+    <div class="flex flex-wrap gap-x-1 mt-1">
+      @for (tag of book().categories; track tag; let last = $last) {
+        <span class="text-brandBlue text-xs hover:underline cursor-pointer">
+          {{ tag }}{{ last ? '' : ',' }}
+        </span>
+      }
+    </div>
+
+    <!-- Price + delivery -->
+    <div class="mt-2">
+      <span class="text-white text-base font-bold">₹{{ book().price }}</span>
+      @if (book().originalPrice > book().price) {
+        <span class="text-white/40 text-xs line-through ml-2">
+          ₹{{ book().originalPrice }}
+        </span>
+      }
+      <p class="text-white/50 text-xs mt-0.5">
+        {{ book().deliveryDateTag }}
+      </p>
+    </div>
+  </div>
+</article>
